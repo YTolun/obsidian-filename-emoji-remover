@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-filename-emoji-remover",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A simple Obsidian plugin to automatically remove emojis from filenames. Main purpose is to get rid of Dropbox sync issues for Readwise imported content.",
 	"main": "main.js",
 	"scripts": {
