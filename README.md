@@ -21,6 +21,12 @@ Services that automatically imports notes from other apps (like Readwise) someti
 -   **Auto-remove on rename:** When a file is renamed, automatically remove emojis from its title. _Needs to be enabled from plugin settings._
 -   **No empty filename:** If a file's name consists solely of emojis and therefore becomes an empty string after the removal, this plugin will generate a generic and random name for that file to prevent it from disappearing.
 
+## Changelog
+
+### 1.0.1
+
+-   Improved code quality based on reviews
+
 ## Roadmap
 
 -   Improve generic/random file names that are generated for filenames that becomes an empty string after the removal.
