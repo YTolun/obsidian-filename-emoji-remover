@@ -1,4 +1,4 @@
-import { Notice, Plugin, TAbstractFile } from 'obsidian';
+import { Notice, Plugin, TAbstractFile, TFile } from 'obsidian';
 import type { FilenameEmojiRemoverSettings } from './interfaces';
 import FilenameEmojiRemoverSettingTab from './settings';
 import emojiRegex from 'emoji-regex';
@@ -11,34 +11,36 @@ const DEFAULT_SETTINGS: FilenameEmojiRemoverSettings = {
 export default class FilenameEmojiRemover extends Plugin {
 	settings: FilenameEmojiRemoverSettings;
 
+	emojiRegex = emojiRegex();
+
 	removeEmojiFromFilename = async (file: TAbstractFile) => {
 		const { fileManager } = this.app;
 
-		const [filename, fileExtension] = file.name.split('.');
-		const oldFilename = filename;
+		if (!(file instanceof TFile)) {
+			return;
+		}
+
+		const [filename, oldFilename, fileExtension] = [
+			file.basename,
+			file.basename,
+			file.extension,
+		];
 		let newFilename = filename;
 
-		let filePath = file.path.split('/');
-		filePath.pop();
+		let filePath = file.parent.path;
 
-		const regex = emojiRegex();
-		const matches = Array.from(filename.matchAll(regex));
-
-		if (matches.length > 0) {
-			for (const match of filename.matchAll(regex)) {
-				const emoji = match[0];
-				newFilename = newFilename.replace(emoji, '');
-			}
-
+		newFilename = filename.replaceAll(this.emojiRegex, '');
+		if (newFilename !== oldFilename) {
 			// Make sure the new file name isn't empty
+			// Randomize if it is
 			if (newFilename.length === 0) {
 				const randomNumber = Math.floor(1000 + Math.random() * 9000);
 				newFilename = `emoji-only-name-${randomNumber}`;
 			}
-			filePath.push(`${newFilename}.${fileExtension}`);
-			let newFilePath = filePath.join('/');
 
+			let newFilePath = `${filePath}/${newFilename}.${fileExtension}`;
 			await fileManager.renameFile(file, newFilePath);
+
 			new Notice(`${oldFilename} is renamed to ${newFilename}`);
 		}
 	};
@@ -55,22 +57,22 @@ export default class FilenameEmojiRemover extends Plugin {
 	};
 
 	async autoRemoveOnCreateToggle(toggle: boolean) {
+		this.app.vault.off('create', this.removeEmojiFromFilename);
+
 		if (toggle) {
 			this.registerEvent(
 				this.app.vault.on('create', this.removeEmojiFromFilename)
 			);
-		} else {
-			this.app.vault.off('create', this.removeEmojiFromFilename);
 		}
 	}
 
 	async autoRemoveOnRenameToggle(toggle: boolean) {
+		this.app.vault.off('rename', this.removeEmojiFromFilename);
+
 		if (toggle) {
 			this.registerEvent(
 				this.app.vault.on('rename', this.removeEmojiFromFilename)
 			);
-		} else {
-			this.app.vault.off('rename', this.removeEmojiFromFilename);
 		}
 	}
 
